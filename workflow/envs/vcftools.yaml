@@ -1,0 +1,9 @@
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - vcftools==0.1.16
+  - vcflib==1.0.10
+  - bcftools==1.15.1
+  

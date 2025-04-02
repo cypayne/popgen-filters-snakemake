@@ -1,0 +1,51 @@
+
+#### INPUTS ####
+
+# path to unfiltered bcf
+bcf: inputs/all.bcf
+
+
+#### FILTERS TO APPLY ####
+### Set the filters you want to run to True, otherwise False
+
+### basic popgen filters
+## will be passed into bcftools view -i
+bcftools_filters: 'FILTER="PASS" & MAF>0.05 & F_MISSING<0.1 & FMT/DP>3 & FMT/DP<20 & AVG(FMT/DP)>3 & AVG(FMT/DP)<20 & QUAL>30' 
+
+
+### GenMap
+## calculate uniqueness of genomic region, i.e. mappability 
+## filter out repetitive regions, determined from reference genome
+## ex. genmap map -K 100 -E 2 -I ${1}.genmap-index -O ${1}.genmap-map -t -w -bg --csv
+## NOTE: currently this pipeline does not run GenMap 
+##       you will need to run GenMap, and then pass in a
+##       mappability bed file with regions that have a 
+#        mappability score of 1 and filters out the rest 
+#GenMap: False 
+#mappability_bed: "/home/cpayne/refs/Siphateles_bicolor_genome/Sbicolor.chr1-32.score1.100_2-mappability.bed"
+
+
+### ngsParalog
+## calculate likelihood ratios of mismapping reads at each site
+## filter out significantly mismapped sites
+## takes a list of bam files
+ngsParalog: True 
+# path to ngsParalog executable
+# need to download ngsParalog separately
+# git clone https://github.com/tplinderoth/ngsParalog
+# cd ngsParalog; make
+ngsParalog_path: "/home/cpayne/programs/ngsParalog" 
+# list of bam files
+bam_list: inputs/bam_list.txt
+# list of chromosomes and lengths in descending order
+chrom_lengths_list: inputs/chrom_lengths.sorted.txt
+
+
+### PCAone
+PCAone: True 
+# define window-size within which to calculate LD
+ld_window_bp: 100000
+# define r^2 ld threshold for filtering
+ld_threshold_r2: 0.2
+
+

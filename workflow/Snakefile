@@ -1,0 +1,36 @@
+
+include: "rules/common.smk"
+
+localrules: make_scatter_files 
+
+# evaluate conditional filtering steps
+targets = []
+if config['ngsParalog']: 
+    targets.append(expand("results/ngsParalog/{chrom}_{scat}.lr",zip,chrom=chrom_scatter_table.chrom,scat=chrom_scatter_table.scatter_name)),
+    targets.append("results/ngsParalog/bi-snp.filtered.lr.nonmismapped_sites.txt"), 
+    targets.append("results/filtered_bcfs/nomismap.bi-snp.filtered.bcf"),
+    targets.append("results/filtered_bcfs/nomismap.bi-snp.filtered.bcf.stats"),
+    targets.append("results/filtered_bcfs/nomismap.bi-snp.filtered.bcf.sample-stats"),
+
+if config['PCAone']:
+    targets.append(expand("results/ld_filter/ld_prune/{chrom}.ld.prune.in",chrom=unique_chroms)),
+    targets.append(expand("results/ld_filter/ld_stats/{chrom}.ld.gz",chrom=unique_chroms)),
+    #targets.append("results/ld_filter/ld_r2_decay_curve.txt"), 
+    targets.append("results/filtered_bcfs/ld.bi-snp.filtered.bcf"),
+    targets.append("results/filtered_bcfs/ld.bi-snp.filtered.bcf.stats"),
+
+#localrules: 
+#
+rule all:
+    input:
+        "results/snp_filter/bi-snp.filtered.bcf", 
+        "results/snp_filter/bi-snp.filtered.bcf.stats", 
+#        "results/vcftools_summary_stats/pre_filter_stats/pre_filter.subsample.summary.txt",
+        "results/vcftools_summary_stats/post_snp_filter_stats/bi-snp.filtered.subsample.summary.txt",
+        targets,
+
+include: "rules/bcftools_filter.smk"
+include: "rules/ngsparalog_filter.smk"
+include: "rules/PCAone_filter.smk"
+include: "rules/vcf_stats.smk"
+
