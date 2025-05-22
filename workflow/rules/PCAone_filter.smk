@@ -87,10 +87,13 @@ rule calc_r2_decay:
     params:
         ld_bp=config['ld_window_bp'],
     conda:
-        "../envs/R.yaml",
+        #"../envs/R.yaml",
+        "../envs/python.yaml",
     shell:
-        "Rscript --vanilla workflow/scripts/calc_decay_bin.R {input} {output} "
+        "python workflow/scripts/calc_decay_bin.py {input} {output} "
         "--window {params.ld_bp} --bins 100 "
+        #"Rscript --vanilla workflow/scripts/calc_decay_bin.R {input} {output} "
+        #"--window {params.ld_bp} --bins 100 "
 
         
 ## prune by ancestry-adjusted LD 

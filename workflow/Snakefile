@@ -1,4 +1,4 @@
-
+#
 include: "rules/common.smk"
 
 localrules: make_scatter_files 
@@ -18,6 +18,10 @@ if config['PCAone']:
     #targets.append("results/ld_filter/ld_r2_decay_curve.txt"), 
     targets.append("results/filtered_bcfs/ld.bi-snp.filtered.bcf"),
     targets.append("results/filtered_bcfs/ld.bi-snp.filtered.bcf.stats"),
+if config['ngsParalog'] and config['PCAone']:
+    targets.append("results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf"),
+    targets.append("results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf.stats"),
+    targets.append("results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf.sample-stats"),
 
 #localrules: 
 #
@@ -33,4 +37,4 @@ include: "rules/bcftools_filter.smk"
 include: "rules/ngsparalog_filter.smk"
 include: "rules/PCAone_filter.smk"
 include: "rules/vcf_stats.smk"
-
+include: "rules/combine_filtered_bcfs.smk"

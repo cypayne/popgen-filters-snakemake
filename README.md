@@ -9,6 +9,8 @@ For NOAA folks, here's how you might use this pipeline:
 Eric's awesome [mega-non-model-wgs-snakeflow](https://github.com/eriqande/mega-non-model-wgs-snakeflow) BCF > 
 popgen-filters-snakemake BCF > [mega-post-bcf-exploratory-snakeflows](https://github.com/eriqande/mega-post-bcf-exploratory-snakeflows)
 
+Credits: I wrote up this pipeline using [Eric Anderson](https://github.com/eriqande)'s snakemake workflows and expertise as an incredibly helpful guide. If this pipeline is useful to you, you should take a look at his suite!
+
 ## Currently supports filtering by the following
 - filter by missingness, depth, minor allele frequency, quality, etc  (bcftools view)
 - remove SNPs with mismapping reads (ngsParalog calcR)
@@ -83,6 +85,9 @@ retained. Here's what the example filters by:
 - AVG(FMT/DP)>3 & AVG(FMT/DP)<20 = keep variants with on average more than 3 reads but less than 20 reads across samples 
 - QUAL>30 = keep variants with a quality score greater than 30
 
+If you're not sure how to set these parameters, see the section below called "Choosing filtering
+parameters".
+
 ```
 ## in config.yaml
 bcf: inputs/all.bcf
@@ -138,3 +143,49 @@ chrom1  4000000
 chrom2  3500000
 chrom3  2000000
 ```
+
+## Outputs
+At minimum, you will output a bcf filtered by biallelic SNPs and the popgen filters you
+specified for bcftools as well as summary stats for your bcf (from bcftools stats):
+```
+results/snp_filter/bi-snp.filtered.bcf
+results/snp_filter/bi-snp.filtered.bcf.stats
+```
+
+If you filtered by mismapping reads with ngsParalog, you'll also get:
+```
+results/filtered_bcfs/nomismap.bi-snp.filtered.bcf
+results/filtered_bcfs/nomismap.bi-snp.filtered.bcf.stats
+```
+
+If you filtered by ancestry-adjusted LD with PCAone, you'll also get:
+```
+results/filtered_bcfs/ld.bi-snp.filtered.bcf
+results/filtered_bcfs/ld.bi-snp.filtered.bcf.stats
+```
+
+If you filtered by ngsParalog and PCAone, you'll also get:
+```
+results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf
+results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf.stats
+```
+
+These are the basic outputs, here are some other outputs that might interest you:
+- PCAone ancestry-adjusted r^2 values between SNPs 
+```
+results/ld_filter/bi-snp.filtered.ld.gz         # all comparisons
+results/ld_filter/bi-snp.filtered.ld.prune.in   # comparisons for retained SNPs
+```
+- ngsParalog likelihood-ratios of mismapping reads per SNP
+```
+results/ngsParalog/bi-snp.filtered.lr           # LRs for all SNPs
+results/ngsParalog/bi-snp.filtered.lr.nonmismapped_sites.txt # LRs for SNPs that are statistically not mismapped 
+```
+
+## Choosing filtering parameters
+If you're not sure what filtering parameters you should use, that may be because you're
+not sure what your data looks like yet. I wrote in a module to help you do this!
+
+
+
+
