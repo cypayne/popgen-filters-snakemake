@@ -178,14 +178,38 @@ results/ld_filter/bi-snp.filtered.ld.prune.in   # comparisons for retained SNPs
 ```
 - ngsParalog likelihood-ratios of mismapping reads per SNP
 ```
-results/ngsParalog/bi-snp.filtered.lr           # LRs for all SNPs
+results/ngsParalog/bi-snp.filtered.lr                        # LRs for all SNPs
 results/ngsParalog/bi-snp.filtered.lr.nonmismapped_sites.txt # LRs for SNPs that are statistically not mismapped 
+```
+- post-filtering summary statistics and visuals of variants in your basic popgen filtered
+BCF (calculated the same way as pre-filtering summary stats, see the next section)
+```
+results/vcftools_summary_stats/post_snp_filter_stats/ # folder with stats, plots, summary
+    bi-snp.filtered.subsample.summary.txt             # summary of stats distributions
 ```
 
 ## Choosing filtering parameters
 If you're not sure what filtering parameters you should use, that may be because you're
-not sure what your data looks like yet. I wrote in a module to help you do this!
+not sure what your data looks like yet. I wrote a module to help you do this!
 
+The pre-summary stats module randomly subsamples ~100k SNPs from your input BCF 
+with [vcfrandomsample](https://github.com/vcflib/vcflib/blob/master/doc/vcfrandomsample.md) 
+from [vcflib](https://github.com/vcflib/vcflib) and runs them through various [vcftools](https://vcftools.github.io/index.html) summary statistics functions. Then, a summary script
+will scrape information from these outputs, write summaries of the distributions of each 
+statistic into one output file, and generate plots (pdf) of the distributions. You can 
+use these to pick reasonable thresholds for minimum and maximum read depth,
+missingness, etc 
 
+To run just this module, you can run the pipeline until the pre_summarize_stats rule:
+```
+snakemake -p --profile hpcc-profiles/slurm/sedna --configfile config.yaml --until pre_summarize_stats
+```
+FYI the random subsampling of SNPs kind of takes a while (~10M SNPs 100 samples ~ 4 hrs), sorry. 
 
+The output will be dropped into the following folder:
+```
+results/vcftools_summary_stats/pre_snp_filter_stats/
+```
 
+[This tutorial](https://speciationgenomics.github.io/filtering_vcfs/) by @speciationgenomics
+is a very helpful resource for interpreting these outputs and choosing your parameters. 
