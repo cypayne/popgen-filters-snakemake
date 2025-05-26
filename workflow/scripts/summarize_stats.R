@@ -50,7 +50,7 @@ if(file.exists(ldepth_mean_file)) {
 lmiss_file <- paste0(stat_dir,"/",file_prefix,".lmiss")
 if(file.exists(lmiss_file)) {
     var_miss <- read_delim(lmiss_file, delim = "\t", col_names = c("chr", "pos", "nchr", "nfiltered", "nmiss", "fmiss"), skip = 1)
-    a <- ggplot(var_miss, aes(fmiss)) + geom_density(fill = "dodgerblue1", colour = "black", alpha = 0.3) + theme_light() + xlim(0,0.2)
+    a <- ggplot(var_miss, aes(fmiss)) + geom_density(fill = "dodgerblue1", colour = "black", alpha = 0.3) + theme_light() + xlim(0,1)
 
     ggsave(a, filename=paste0(stat_dir,"/",file_prefix,".lmiss.pdf"), width=8, height=8, bg="transparent")
 

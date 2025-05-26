@@ -51,6 +51,7 @@ rule pre_filter_stats:
 rule pre_summarize_stats:
     input:
         "results/vcftools_summary_stats/pre_filter_stats/pre_filter.subsample.vcf",
+        "results/vcftools_summary_stats/pre_filter_stats/pre_filter.subsample.ldepth.mean",
     output:
         "results/vcftools_summary_stats/pre_filter_stats/pre_filter.subsample.summary.txt",
     params:
