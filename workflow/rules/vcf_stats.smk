@@ -1,6 +1,3 @@
-
-
-
 ## BEFORE filtering, let's run the per site stats including
 ## - quality per site
 ## - mean depth per site
@@ -10,7 +7,7 @@
 ## XXX to randomly sample ~100k sites from the summary stat output 
 # awk 'BEGIN {srand()} !/^$/ { if (rand() <= .0001 || FNR==1) print $0}' pre_filter.ldepth.mean > out
 
-## randomly subsample 1% of sites
+## randomly subsample 100k sites
 rule pre_random_subsample_bcf:
     input:
         config['bcf'],
@@ -18,8 +15,15 @@ rule pre_random_subsample_bcf:
         "results/vcftools_summary_stats/pre_filter_stats/pre_filter.subsample.vcf",
     conda:
         "../envs/vcftools.yaml",
+    params:
+        nsnps=100000,
     shell:
-        "bcftools view -v snps -m 2 -M 2 {input} | vcfrandomsample -r 0.01 > {output} "  
+#        "bcftools view -v snps -m 2 -M 2 {input} | vcfrandomsample -r 0.01 > {output} "  
+        "bcftools view --header-only {input} > {output} ; "
+        "bcftools view -v snps -m 2 -M 2 --no-header {input} | "
+        """awk '{{ printf("%f\\t%s\\n",rand(),$0);}}' | """
+        "( sort -t $'\t'  -T . -k1,1g || true) | "
+        "head -n {params.nsnps} | cut -f 2-  >> {output} "
 
 ## output various summary statistics
 rule pre_filter_stats:

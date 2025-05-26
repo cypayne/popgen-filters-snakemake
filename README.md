@@ -193,8 +193,7 @@ If you're not sure what filtering parameters you should use, that may be because
 not sure what your data looks like yet. I wrote a module to help you do this!
 
 The pre-summary stats module randomly subsamples ~100k SNPs from your input BCF 
-with [vcfrandomsample](https://github.com/vcflib/vcflib/blob/master/doc/vcfrandomsample.md) 
-from [vcflib](https://github.com/vcflib/vcflib) and runs them through various [vcftools](https://vcftools.github.io/index.html) summary statistics functions. Then, a summary script
+with awk and runs them through various [vcftools](https://vcftools.github.io/index.html) summary statistics functions. Then, a summary script
 will scrape information from these outputs, write summaries of the distributions of each 
 statistic into one output file, and generate plots (pdf) of the distributions. You can 
 use these to pick reasonable thresholds for minimum and maximum read depth,
@@ -204,7 +203,7 @@ To run just this module, you can run the pipeline until the pre_summarize_stats 
 ```
 snakemake -p --profile hpcc-profiles/slurm/sedna --configfile config.yaml --until pre_summarize_stats
 ```
-FYI the random subsampling of SNPs kind of takes a while (~10M SNPs 100 samples ~ 4 hrs), sorry. 
+FYI the random subsampling of SNPs kind of takes a while (~10M SNPs 100 samples ~ 2 hrs), sorry. 
 
 The output will be dropped into the following folder:
 ```
