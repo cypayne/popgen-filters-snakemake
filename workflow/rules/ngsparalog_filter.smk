@@ -145,3 +145,5 @@ rule nommismap_bcf_stats_per_sample:
         "../envs/bcftools.yaml",
     shell:
         "bcftools stats -s - {input.bcf} | grep '^PSC' -B 1 > {output.stats} "  
+
+

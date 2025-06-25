@@ -13,6 +13,7 @@ Credits: I wrote up this pipeline using [Eric Anderson](https://github.com/eriqa
 
 ## Currently supports filtering by the following
 - filter by missingness, depth, minor allele frequency, quality, etc  (bcftools view)
+- thin by physical distance (cutstom)
 - remove SNPs with mismapping reads (ngsParalog calcR)
 - prune SNPs in LD, accounting for population structure (PCAone ancestry-adjusted LD statistic)
 
@@ -22,6 +23,8 @@ Required:
 - BCF [binary variant file]
 
 Optional, depending on filter:
+- Thin by physical distance
+  - no additional files needed
 - Mismapping reads filter with ngsParalog
   - bam_list.txt [list of bams] 
   - chrom_lengths.sorted.txt [list of chromosomes and lengths] 
@@ -94,7 +97,23 @@ bcf: inputs/all.bcf
 bcftools_filters: 'FILTER="PASS" & MAF>0.05 & F_MISSING<0.1 & FMT/DP>3 & FMT/DP<20 & AVG(FMT/DP)>3 & AVG(FMT/DP)<20 & QUAL>30' 
 ```
 
+### Thin by physical distance
+If you want to thin SNPs by the physical distance (in basepairs) between them, you just need to 
+set the threshold (in basepairs). SNPs within this many basepairs of each other will be removed.
+
+```
+## in config.yaml
+# thin SNPs so that no two SNPs are within N bp of each other
+thin: True
+thin_distance_bp: 1000
+```
+
 ### Ancestry-adjusted LD pruning with PCAone 
+WARNING: Unfortunately this step relies on hard genotype calls / most likely genotype calls, and therefore
+only works well for higher coverage data (i.e. if you trust the hard genotype calls to generate a reliable PCA). 
+I wouldn't recommend using this filter for <5X coverage, you may be better off thinning by a constant physical
+distance between SNPs.
+
 If you want to filter by linkage disequilibrium for a sample set that may or may not have population structure with
 [PCAone](https://github.com/Zilong-Li/PCAone), you don't need to pass in any new input files, but you will need to 
 set some parameters. You will need to decide the window size to calculate the LD statistic for and the r^2 threshold
@@ -152,6 +171,12 @@ results/snp_filter/bi-snp.filtered.bcf
 results/snp_filter/bi-snp.filtered.bcf.stats
 ```
 
+If you thinned SNPs by physical distance, you'll also get:
+```
+results/thin_filter/thinned.bi-snp.filtered.bcf
+results/thin_filter/thinned.bi-snp.filtered.bcf.stats
+```
+
 If you filtered by mismapping reads with ngsParalog, you'll also get:
 ```
 results/filtered_bcfs/nomismap.bi-snp.filtered.bcf
@@ -162,6 +187,12 @@ If you filtered by ancestry-adjusted LD with PCAone, you'll also get:
 ```
 results/filtered_bcfs/ld.bi-snp.filtered.bcf
 results/filtered_bcfs/ld.bi-snp.filtered.bcf.stats
+```
+
+If you thinned by distance and filtered by ngsParalog, you'll also get:
+```
+results/filtered_bcfs/thin.nomismap.bi-snp.filtered.bcf
+results/filtered_bcfs/thin.nomismap.bi-snp.filtered.bcf.stats
 ```
 
 If you filtered by ngsParalog and PCAone, you'll also get:

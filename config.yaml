@@ -13,6 +13,13 @@ bcf: inputs/all.bcf
 bcftools_filters: 'FILTER="PASS" & MAF>0.05 & F_MISSING<0.1 & FMT/DP>3 & FMT/DP<20 & AVG(FMT/DP)>3 & AVG(FMT/DP)<20 & QUAL>30' 
 
 
+### thin by physical distance
+## thin SNPs so that no two SNPs are within N bp of each other
+## i.e. SNPs within N bp of a SNP will be removed
+thin: True
+thin_distance_bp: 1000
+
+
 ### GenMap
 ## calculate uniqueness of genomic region, i.e. mappability 
 ## filter out repetitive regions, determined from reference genome

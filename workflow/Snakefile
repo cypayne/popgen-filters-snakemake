@@ -5,6 +5,12 @@ localrules: make_scatter_files
 
 # evaluate conditional filtering steps
 targets = []
+
+if config['thin']:
+    targets.append("results/thin_filter/thinned.bi-snp.filtered.bcf"),
+    targets.append("results/thin_filter/thinned.bi-snp.filtered.bcf.stats"),
+    include: "rules/thin_filter.smk"
+
 if config['ngsParalog']: 
     targets.append(expand("results/ngsParalog/{chrom}_{scat}.lr",zip,chrom=chrom_scatter_table.chrom,scat=chrom_scatter_table.scatter_name)),
     targets.append("results/ngsParalog/bi-snp.filtered.lr.nonmismapped_sites.txt"), 
@@ -12,6 +18,10 @@ if config['ngsParalog']:
     targets.append("results/filtered_bcfs/nomismap.bi-snp.filtered.bcf.stats"),
     targets.append("results/filtered_bcfs/nomismap.bi-snp.filtered.bcf.sample-stats"),
     include: "rules/ngsparalog_filter.smk"
+    if config['thin']:
+        targets.append("results/filtered_bcfs/thin.nomismap.bi-snp.filtered.bcf"),
+        targets.append("results/filtered_bcfs/thin.nomismap.bi-snp.filtered.bcf.stats"),
+        targets.append("results/filtered_bcfs/thin.nomismap.bi-snp.filtered.bcf.sample-stats"),
 
 if config['PCAone']:
     targets.append(expand("results/ld_filter/ld_prune/{chrom}.ld.prune.in",chrom=unique_chroms)),
@@ -25,6 +35,7 @@ if config['ngsParalog'] and config['PCAone']:
     targets.append("results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf"),
     targets.append("results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf.stats"),
     targets.append("results/filtered_bcfs/ld.nomismap.bi-snp.filtered.bcf.sample-stats"),
+
 
 #localrules: 
 #
