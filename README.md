@@ -93,8 +93,8 @@ This step will carry out the following steps, in order:
 
 2. Mask missing genotypes (bcftools filter -S . -e '...')
 - -S . — set failing genotypes to missing (./.) rather than dropping the whole site.
-- You set '...' - an example is 'FMT/DP<=3 | FMT/DP>=20':
-    - FMT/DP<=3 — a sample's genotype is set to missing if it is supported by <3 reads (too little coverage to trust)
+- You should set '...' - an example is 'FMT/DP<=3 | FMT/DP>=20':
+    - FMT/DP<3 — a sample's genotype is set to missing if it is supported by <3 reads (too little coverage to trust)
     - FMT/DP>20 — a sample's genotype is set to missing if it has >20 reads (unusually high depth, a sign of mismapping or copy‑number artifacts)
 
 3. Recompute tags (bcftools +fill-tags -- -t AF,MAF,F_MISSING)
