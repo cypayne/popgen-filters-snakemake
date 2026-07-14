@@ -75,18 +75,38 @@ snakemake -p --configfile config.yaml
 You can edit the provided config.yaml file to reflect your data and filtering needs.
 
 ### Standard population genetics filters
+LAST UPDATED 13 July 2026
 
 If you just want to filter by standard popgen filters with bcftools (i.e. all other filters are set to False),
 then you only need to pass in a bcf file with your unfiltered variants. You'll also want to set the parameters
-you want bcftools to filter by. You should set the parameters for what you want to include in the filtered 
-variant set (the filtering step uses bcftools view -i). Only biallelic SNPs meeting these criteria will be
-retained. Here's what the example filters by:
-- FILTER="PASS" = keep variants that pass filter
-- MAF>0.05 = keep variants with a minor allele frequency above 5%
-- F_MISSING<0.1 = keep variants with genotypes for at least 90% of samples (<10% missing data) 
-- FMT/DP>3 & FMT/DP<20 = keep variants with more than 3 reads but less than 20 reads for every sample
-- AVG(FMT/DP)>3 & AVG(FMT/DP)<20 = keep variants with on average more than 3 reads but less than 20 reads across samples 
-- QUAL>30 = keep variants with a quality score greater than 30
+you want bcftools to filter by. 
+
+This step will carry out the following steps, in order: 
+- pull out biallelic SNPs
+- tag unreliable genotypes as "missing" based on user-defined criteria
+- recompute allele‑frequency and missingness tags to reflect udpated missingness tags
+- remove any site that fails user-defined filters
+
+Pull out biallelic SNPs (bcftools view -v snps -m 2 -M 2)
+- -v snps — keep only SNPs; indels and other variant types are discarded
+- -m 2 -M 2 — keep only biallelic sites (exactly two alleles - keeps minor allele frequency unambiguous)
+
+Mask missing genotypes (bcftools filter -S . -e '...')
+- -S . — set failing genotypes to missing (./.) rather than dropping the whole site.
+- You set '...' - an example is 'FMT/DP<=3 | FMT/DP>=20':
+    - FMT/DP<=3 — a sample's genotype is set to missing if it is supported by <3 reads (too little coverage to trust)
+    - FMT/DP>20 — a sample's genotype is set to missing if it has >20 reads (unusually high depth, a sign of mismapping or copy‑number artifacts)
+
+Recompute tags (bcftools +fill-tags -- -t AF,MAF,F_MISSING)
+Recalculates AF, MAF, and F_MISSING so that they reflect the genotypes that were just set to missing. Otherwise, these values would be stale. 
+
+Filter sites (bcftools view -e '...') 
+You should set the parameters for what you want to exclude in the filtered variant set. For example, if you set bcftools_filters: 'FILTER!="PASS" || INFO/MAF<=0.05 || F_MISSING>0.1 || AVG(FMT/DP)<3 || AVG(FMT/DP)>20 || QUAL<30', then biallelic SNPs will be removed if any one of these criteria is true:
+- FILTER!="PASS" — did not pass upstream variant‑caller filters
+- INFO/MAF<=0.05 — has a minor allele frequency above or equal to 5% (removes rare variants; keeps MAF > 5%)
+- F_MISSING>0.1 — more than 10% of samples have a missing genotype (keeps sites with genotypes for 90%+ samples)
+- AVG(FMT/DP)<3 || AVG(FMT/DP)>20 — has on average (across samples) less than 3 reads or more than 20 reads 
+- QUAL<30 — has a variant quality score that is less than 30 (keeps QUAL >= 30)
 
 If you're not sure how to set these parameters, see the section below called "Choosing filtering
 parameters".
@@ -94,7 +114,10 @@ parameters".
 ```
 ## in config.yaml
 bcf: inputs/all.bcf
-bcftools_filters: 'FILTER="PASS" & MAF>0.05 & F_MISSING<0.1 & FMT/DP>3 & FMT/DP<20 & AVG(FMT/DP)>3 & AVG(FMT/DP)<20 & QUAL>30' 
+## set failing genotypes to "missing" if they don't meet this criteria
+convert_to_missingness: 'FMT/DP<3 | FMT/DP>20'
+## exclude sites that don't meet any one of the following criteria
+bcftools_filters: 'FILTER!="PASS" || INFO/MAF<=0.05 || F_MISSING>0.1 || AVG(FMT/DP)<3 || AVG(FMT/DP)>20 || QUAL<30'
 ```
 
 ### Thin by physical distance

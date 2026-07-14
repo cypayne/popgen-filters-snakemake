@@ -2,21 +2,25 @@
 #### INPUTS ####
 
 # path to unfiltered bcf
-bcf: inputs/all.bcf
+#bcf: inputs/all.bcf
+bcf: inputs/example.bcf
 
 
 #### FILTERS TO APPLY ####
 ### Set the filters you want to run to True, otherwise False
 
 ### basic popgen filters
-## will be passed into bcftools view -i
-bcftools_filters: 'FILTER="PASS" & MAF>0.05 & F_MISSING<0.1 & FMT/DP>3 & FMT/DP<20 & AVG(FMT/DP)>3 & AVG(FMT/DP)<20 & QUAL>30' 
+## set failing genotypes to "missing" if they don't meet this criteria 
+convert_to_missingness: 'FMT/DP<3 | FMT/DP>20'
+## exclude sites that don't meet any one of the following criteria
+## will be passed into bcftools view -e (after genotypes are set to missing)
+bcftools_filters: 'FILTER!="PASS" || INFO/MAF<=0.05 || F_MISSING>=0.1 || AVG(FMT/DP)<3 || AVG(FMT/DP)>20 || QUAL<30'
 
 
 ### thin by physical distance
 ## thin SNPs so that no two SNPs are within N bp of each other
 ## i.e. SNPs within N bp of a SNP will be removed
-thin: True
+thin: False 
 thin_distance_bp: 1000
 
 
@@ -36,7 +40,7 @@ thin_distance_bp: 1000
 ## calculate likelihood ratios of mismapping reads at each site
 ## filter out significantly mismapped sites
 ## takes a list of bam files
-ngsParalog: True 
+ngsParalog: False
 # path to ngsParalog executable
 # need to download ngsParalog separately
 # git clone https://github.com/tplinderoth/ngsParalog
@@ -49,7 +53,7 @@ chrom_lengths_list: inputs/chrom_lengths.sorted.txt
 
 
 ### PCAone
-PCAone: True 
+PCAone: False
 # define window-size within which to calculate LD
 ld_window_bp: 100000
 # define r^2 ld threshold for filtering
