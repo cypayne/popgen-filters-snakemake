@@ -87,20 +87,20 @@ This step will carry out the following steps, in order:
 - recompute allele‑frequency and missingness tags to reflect udpated missingness tags
 - remove any site that fails user-defined filters
 
-Pull out biallelic SNPs (bcftools view -v snps -m 2 -M 2)
+1. Pull out biallelic SNPs (bcftools view -v snps -m 2 -M 2)
 - -v snps — keep only SNPs; indels and other variant types are discarded
 - -m 2 -M 2 — keep only biallelic sites (exactly two alleles - keeps minor allele frequency unambiguous)
 
-Mask missing genotypes (bcftools filter -S . -e '...')
+2. Mask missing genotypes (bcftools filter -S . -e '...')
 - -S . — set failing genotypes to missing (./.) rather than dropping the whole site.
 - You set '...' - an example is 'FMT/DP<=3 | FMT/DP>=20':
     - FMT/DP<=3 — a sample's genotype is set to missing if it is supported by <3 reads (too little coverage to trust)
     - FMT/DP>20 — a sample's genotype is set to missing if it has >20 reads (unusually high depth, a sign of mismapping or copy‑number artifacts)
 
-Recompute tags (bcftools +fill-tags -- -t AF,MAF,F_MISSING)
+3. Recompute tags (bcftools +fill-tags -- -t AF,MAF,F_MISSING)
 Recalculates AF, MAF, and F_MISSING so that they reflect the genotypes that were just set to missing. Otherwise, these values would be stale. 
 
-Filter sites (bcftools view -e '...') 
+4. Filter sites (bcftools view -e '...') 
 You should set the parameters for what you want to exclude in the filtered variant set. For example, if you set bcftools_filters: 'FILTER!="PASS" || INFO/MAF<=0.05 || F_MISSING>0.1 || AVG(FMT/DP)<3 || AVG(FMT/DP)>20 || QUAL<30', then biallelic SNPs will be removed if any one of these criteria is true:
 - FILTER!="PASS" — did not pass upstream variant‑caller filters
 - INFO/MAF<=0.05 — has a minor allele frequency above or equal to 5% (removes rare variants; keeps MAF > 5%)
